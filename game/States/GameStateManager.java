@@ -10,6 +10,10 @@ import java.util.Stack;
 
 public class GameStateManager {
 
+    /*public static int mToggle = 1;
+    public static int sToggle= 1;
+    public static int vToggle = 1;*/
+
     private Stack<State> states;
 
     public GameStateManager(){
