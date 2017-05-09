@@ -4,6 +4,7 @@ package com.arenafighter.game.Physics;
  * Created by Frank on 2017-04-15.
  */
 
+import com.arenafighter.game.ArenaFighter;
 import com.arenafighter.game.Sprites.Fighter;
 
 import java.util.ArrayList;
@@ -26,10 +27,25 @@ public class EnergyAndForceManagerThread extends Thread{
 
         while(keepRunning){                                    //loop forever
             if(!paused && System.currentTimeMillis() > timer){     //once timestep is reached
-                for(Fighter f: fighters){               //for each fighter...
+
+                //INTERSECTION ALGORITHMN
+                for(int i = 0; i < fighters.size(); i++){
+                    Fighter f1 = fighters.get(i);
+                    for(int j = i + 1; j < fighters.size(); j++){
+                        Fighter f2 = fighters.get(j);
+                        double distance = Math.sqrt(Math.pow(f1.getPosition().x - f2.getPosition().x, 2) + Math.pow(f1.getPosition().y - f2.getPosition().y, 2));
+                        if(distance < ArenaFighter.radius * 2){
+                            f1.collideWith(f2);
+                        }
+                    }
+                }
+
+                //UPDATE FIGHTER VARIABLES
+                for(Fighter f: fighters){
                     updateFighter(f);
                 }
-                //sets the next timer trigger
+
+                //NEXT TIMER TRIGGER
                 timer += TIMESTEP;
             }
         }
@@ -63,18 +79,17 @@ public class EnergyAndForceManagerThread extends Thread{
     }
     public void updateFighter(Fighter f){
         //double positionX = f.getTranslateX();
-        double positionX = f.position.x;
+        double positionX = f.getPosition().x;
         double netForceX = f.getNetForceX();
         double velocityX = f.getVelocityX();
         double accelerationX = f.getAccelerationX();
 
         //double positionY = f.getTranslateY();
-        double positionY = f.position.y;
+        double positionY = f.getPosition().y;
         double netForceY = f.getNetForceY();
         double velocityY = f.getVelocityY();
         double accelerationY = f.getAccelerationY();
 
-        double frictionForce = f.getMaxFrictionForce();
         int mass = f.getMass();
 
         Stack<Impact> impacts = f.getImpacts();
@@ -88,11 +103,11 @@ public class EnergyAndForceManagerThread extends Thread{
         }
 
         //adjusts accelerationX if forceX is greater than the max friction, otherwise sets to 0
-        if(netForceX > 0 && netForceX > frictionForce){
-            accelerationX = (netForceX - frictionForce) / mass;
+        if(netForceX > 0){
+            accelerationX = (netForceX) / mass;
         }
-        else if(netForceX < 0 && Math.abs(netForceX) > frictionForce){
-            accelerationX = (netForceX + frictionForce) / mass;
+        else if(netForceX < 0){
+            accelerationX = (netForceX) / mass;
         }
         else if(Math.abs(velocityX) < 0.25){
             velocityX = 0;
@@ -110,11 +125,11 @@ public class EnergyAndForceManagerThread extends Thread{
         velocityX *= FRICTION_MULTIPLIER;
 
         //adjusts accelerationY if forceY is greater than the max friction, otherwise sets to 0
-        if(netForceY > 0 && netForceY > frictionForce){
-            accelerationY = (netForceY - frictionForce) / mass;
+        if(netForceY > 0){
+            accelerationY = (netForceY) / mass;
         }
-        else if(netForceY < 0 && Math.abs(netForceY) > frictionForce){
-            accelerationY = (netForceY + frictionForce) / mass;
+        else if(netForceY < 0){
+            accelerationY = (netForceY) / mass;
         }
         else if(Math.abs(velocityY) < 0.25){
             velocityY = 0;
@@ -133,12 +148,12 @@ public class EnergyAndForceManagerThread extends Thread{
 
         f.setAccelerationX(accelerationX);
         //f.setTranslateX(positionX);
-        f.position.x = (float)positionX;
+        f.getPosition().x = (float)positionX;
         f.setVelocityX(velocityX);
 
         f.setAccelerationY(accelerationY);
         //f.setTranslateY(positionY);
-        f.position.y = (float)positionY;
+        f.getPosition().y = (float)positionY;
         f.setVelocityY(velocityY);
     }
 }

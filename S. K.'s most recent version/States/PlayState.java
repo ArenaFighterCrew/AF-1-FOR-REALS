@@ -89,8 +89,8 @@ public class PlayState extends State {
     /////////////////////////////////////////////////////////////////////////////
 
     //Static for main menu to access it (restart position)
-    public static Fighter player1 = new PlayerFighter();
-    Fighter player2 = new PlayerFighter();
+    public Fighter player1 = new PlayerFighter();
+    public Fighter player2 = new PlayerFighter();
 
     /*EnergyAndForceManagerThread eafmt = new EnergyAndForceManagerThread();
     eafmt.addFighter(player1);
@@ -104,12 +104,12 @@ public class PlayState extends State {
         }
     }
     */
-    Force rightForce = new Force(165, 0);
-    Force leftForce = (Force)rightForce.getInverse();
+    //Force rightForce = new Force(40, 0);
+    //Force leftForce = (Force)rightForce.getInverse();
 
     /////We switched NEGATIVE 155 to POSITIVE 155
-    Force upForce = new Force(165, Math.PI / 2);
-    Force downForce = (Force)upForce.getInverse();
+    //Force upForce = new Force(40, Math.PI / 2);
+    //Force downForce = (Force)upForce.getInverse();
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -121,7 +121,8 @@ public class PlayState extends State {
         //GOTTA MOVE THE BOUNDS WITH THE GOD DAMN PLAYER
         //
         //////////////////////////////////////////////
-        player1 = new Fighter(300, 200);
+        player1 = new Fighter(400, 720/2);
+        player2 = new Fighter(1080 - 400, 720/2);
 
         map = MapManager.map;
 
@@ -261,9 +262,22 @@ public class PlayState extends State {
                 else if(keycode == 47)
                     player1.walk(3, true);
 
-                else if(keycode == 59){
+                else if(keycode == 62){
                     player1.dodge();
                 }
+
+                //TEMP Player 2 controls
+                if(keycode == 22)
+                    player2.walk(0, true);
+
+                else if(keycode == 19)
+                    player2.walk(1, true);
+
+                else if(keycode == 21)
+                    player2.walk(2, true);
+
+                else if(keycode == 20)
+                    player2.walk(3, true);
                 return true;
             }
 
@@ -279,12 +293,24 @@ public class PlayState extends State {
                 else if(keycode == 51)
                     player1.walk(1, false);
 
-                //WARNING: DIRECTIONS 2 AND 3 ARE SWAPPED
                 else if(keycode == 47)
                     player1.walk(3, false);
 
                 else if(keycode == 29)
                     player1.walk(2, false);
+
+                //TEMP player 2 controls
+                if(keycode == 22)
+                    player2.walk(0, false);
+
+                else if(keycode == 19)
+                    player2.walk(1, false);
+
+                else if(keycode == 21)
+                    player2.walk(2, false);
+
+                else if(keycode == 20)
+                    player2.walk(3, false);
 
                 return true;
             }
@@ -294,7 +320,9 @@ public class PlayState extends State {
         });
 
         if (Gdx.input.justTouched()) {
-            score1++;
+            double x = Gdx.input.getX() - 39;
+            double y = ArenaFighter.HEIGHT - Gdx.input.getY() - 85;
+            player1.dash(x, y);
         }
 
 
@@ -457,6 +485,7 @@ public class PlayState extends State {
         //sb.draw(player.getTexture(), player.getPosition().x, player.getPosition().y);
         sb.draw(map.getTexture(), map.getMapX(), map.getMapY());
         sb.draw(player1.getTexture(), player1.getPosition().x, player1.getPosition().y);
+        sb.draw(player2.getTexture(), player2.getPosition().x, player2.getPosition().y);
         //font.getData().setScale(20);
 
         //Scores

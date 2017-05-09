@@ -30,6 +30,9 @@ public class ArenaFighter extends ApplicationAdapter {
 	//public static PauseState pauseState;
 	public static boolean fromPause;
 
+	private Texture circle;
+	public static int radius;
+
 	//Methods of Steven added for testing
 
 
@@ -57,6 +60,8 @@ public class ArenaFighter extends ApplicationAdapter {
 		menuState = new MenuState(gsm);
 		fromPause = false;
 		border = new Texture("Border.png");
+		circle = new Texture("White Circle.png");
+		radius = circle.getWidth()/2;
 		//pauseState = new PauseState(gsm);
 		gsm.push(menuState);
 	}

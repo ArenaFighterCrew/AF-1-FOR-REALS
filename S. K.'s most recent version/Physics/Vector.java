@@ -7,8 +7,10 @@ package com.arenafighter.game.Physics;
 public class Vector {
     private int magnitude;
     private double angle;   //in radians
-    public static int BASE_FORCE_MAGNITUDE = 160;
-    public static double FORCE_IMPACT_RATIO = 2.5;
+    public static double BOUNCINESS_FACTOR = 50;
+    public static int BASE_FORCE_MAGNITUDE = 35;
+    public static double FORCE_IMPACT_RATIO = 10;
+    public static double DODGE_DASH_RATIO = 2.5;
 
     public Vector(int iMagnitude, double iAngle){
         magnitude = iMagnitude;

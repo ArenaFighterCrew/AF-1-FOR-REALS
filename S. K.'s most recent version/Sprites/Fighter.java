@@ -28,7 +28,6 @@ public /*abstract*/ class Fighter /*extends StackPane*/{
     private int mass;
     private double netForceX;
     private double netForceY;
-    private double maxFrictionForce;
     private double velocityX;
     private double velocityY;
     private double accelerationX;
@@ -42,7 +41,7 @@ public /*abstract*/ class Fighter /*extends StackPane*/{
     //My variables
     private Texture player;
     private Rectangle bounds;
-    public static Vector3 position;
+    public Vector3 position;
 
 
 
@@ -100,27 +99,33 @@ public /*abstract*/ class Fighter /*extends StackPane*/{
         boolean isUp = false;
         boolean isDown = false;
 
-        //friction = friction constant * normal force, defaults to 125
-        maxFrictionForce = (int)(FRICTION_CONSTANT * mass * 0.5);
-
         //getChildren().add(icon);
     }
     public void collideWith(Fighter f){
-        //SHITTY INACCURATE COLLISION
-        /*
-        double m1 = mass;
-        double m2 = f.getMass();
-        double v1x = velocityX;
-        double v1y = velocityY;
-        double v2x = f.getVelocityX();
-        double v2y = f.getVelocityY();
+        double x1 = this.getPosition().x;
+        double y1 = this.getPosition().y;
 
-        double vf1x = (v1x * (m1 - m2) + (2 * m2 * v2x)) / (m1 + m2);
-        double vf1y = (v1y * (m1 - m2) + (2 * m2 * v2y)) / (m1 + m2);
+        double x2 = f.getPosition().x;
+        double y2 = f.getPosition().y;
 
-        setVelocityX(vf1x * 5);
-        setVelocityY(vf1y * 5);
-        */
+        double angleBetween = Math.atan2(y2-y1, x2-x1);
+        double vAngle1 = Math.atan2(this.getVelocityY(), this.getVelocityX());
+        double vAngle2 = Math.atan2(f.getVelocityY(), f.getVelocityX());
+
+        double deltaAngle1 = vAngle1 - angleBetween;
+        double deltaAngle2 = vAngle2 - (angleBetween + Math.PI);
+
+        double magF1toF2 = Math.cos(deltaAngle1) * this.getVelocityMagnitude();
+        double magF2toF1 = Math.cos(deltaAngle2) * f.getVelocityMagnitude();
+
+        double netMagnitude = (magF1toF2 + magF2toF1) * Vector.BOUNCINESS_FACTOR;
+
+        System.out.println("Magnitude: " + netMagnitude);
+        System.out.println("Angle: " + angleBetween);
+
+        Impact imp = new Impact((int)netMagnitude, angleBetween);
+        this.addImpact((Impact)imp.getInverse());
+        f.addImpact(imp);
         /*
         double v1 = Math.sqrt(getVelocityX() * getVelocityX() + getVelocityY() * getVelocityY());
         double v2 = Math.sqrt(f.getVelocityX() * f.getVelocityX() + f.getVelocityY() * f.getVelocityY());
@@ -277,6 +282,15 @@ public /*abstract*/ class Fighter /*extends StackPane*/{
         System.out.println("Dodged");
     }
 
+    public void dash(double mouseX, double mouseY){
+        double angle = Math.atan2(mouseY - this.getPosition().y, mouseX - this.getPosition().x);
+        System.out.println("Mouse: (" + mouseX + "," + mouseY + ")");
+        System.out.println("Fighter: (" + this.getPosition().x + "," + this.getPosition().y + ")");
+        System.out.println("Angle: " + angle);
+
+        this.addImpact(new Impact((int)(leftDodge.getMagnitude() * Vector.DODGE_DASH_RATIO), angle));
+    }
+
     public void addImpact(Impact i){
         impacts.push(i);
     }
@@ -295,11 +309,7 @@ public /*abstract*/ class Fighter /*extends StackPane*/{
         if(isRight)
             directions++;
         if(directions == 2){
-            if((isUp && isDown) || (isRight && isLeft)){
-                return false;
-            }
-            else
-                return true;
+            return !((isUp && isDown) || (isRight && isLeft));
         }
         return false;
     }
@@ -320,14 +330,6 @@ public /*abstract*/ class Fighter /*extends StackPane*/{
         this.netForceY = netForceY;
     }
 
-    public double getMaxFrictionForce() {
-        return maxFrictionForce;
-    }
-
-    public void setMaxFrictionForce(double maxFrictionForce) {
-        this.maxFrictionForce = maxFrictionForce;
-    }
-
     public double getVelocityX() {
         return velocityX;
     }
@@ -342,6 +344,10 @@ public /*abstract*/ class Fighter /*extends StackPane*/{
 
     public void setVelocityY(double velocityY) {
         this.velocityY = velocityY;
+    }
+
+    public double getVelocityMagnitude(){
+        return Math.sqrt(velocityX * velocityX + velocityY * velocityY);
     }
 
     public int getIndex(){
