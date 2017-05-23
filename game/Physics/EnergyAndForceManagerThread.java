@@ -4,16 +4,18 @@ package com.arenafighter.game.Physics;
  * Created by Frank on 2017-04-15.
  */
 
+import com.arenafighter.game.ArenaFighter;
 import com.arenafighter.game.Sprites.Fighter;
 
 import java.util.ArrayList;
 import java.util.Stack;
 
 public class EnergyAndForceManagerThread extends Thread{
-    ArrayList<Fighter> fighters = new ArrayList<Fighter>();
+    static ArrayList<Fighter> fighters = new ArrayList<Fighter>();
     static int TIMESTEP = 1000/40;
     static double FRICTION_MULTIPLIER = 0.9;
     public boolean keepRunning = true;
+    public static boolean resetQueued = false;
 
 
     private long timer;
@@ -25,11 +27,27 @@ public class EnergyAndForceManagerThread extends Thread{
 
         while(keepRunning){                                    //loop forever
             if(!paused && System.currentTimeMillis() > timer){     //once timestep is reached
-                for(Fighter f: fighters){               //for each fighter...
-                    updateFighter(f);
-                    //System.out.println("player " + f.getIndex() + " updated");
+
+                //INTERSECTION ALGORITHMN
+                for(int i = 0; i < fighters.size(); i++){
+                    Fighter f1 = fighters.get(i);
+                    for(int j = i + 1; j < fighters.size(); j++){
+                        Fighter f2 = fighters.get(j);
+                        if(!f1.getDead() && !f2.getDead()) {
+                            double distance = Math.sqrt(Math.pow(f1.getPosition().x - f2.getPosition().x, 2) + Math.pow(f1.getPosition().y - f2.getPosition().y, 2));
+                            if (distance < ArenaFighter.radius * 2) {
+                                f1.collideWith(f2);
+                            }
+                        }
+                    }
                 }
-                //sets the next timer trigger
+
+                //UPDATE FIGHTER VARIABLES
+                for(Fighter f: fighters){
+                    updateFighter(f);
+                }
+
+                //NEXT TIMER TRIGGER
                 timer += TIMESTEP;
             }
         }
@@ -45,6 +63,17 @@ public class EnergyAndForceManagerThread extends Thread{
         if(paused) {
             timer = System.currentTimeMillis() + TIMESTEP;
             paused = false;
+            for(Fighter f: fighters){
+                f.removeForce(0);
+                f.removeForce(1);
+                f.removeForce(2);
+                f.removeForce(3);
+
+                f.isLeft = false;
+                f.isRight = false;
+                f.isUp = false;
+                f.isDown = false;
+            }
             System.out.println("Physics thread unpaused");
         }
     }
@@ -78,7 +107,6 @@ public class EnergyAndForceManagerThread extends Thread{
         double velocityY = f.getVelocityY();
         double accelerationY = f.getAccelerationY();
 
-        double frictionForce = f.getMaxFrictionForce();
         int mass = f.getMass();
 
 
@@ -86,19 +114,19 @@ public class EnergyAndForceManagerThread extends Thread{
 
         while(!f.getImpacts().isEmpty()){
             Impact i = impacts.pop();
-            System.out.println("ImpactX: " + i.getComponentX());
-            System.out.println("ImpactY: " + i.getComponentY());
+            //System.out.println("ImpactX: " + i.getComponentX());
+            //System.out.println("ImpactY: " + i.getComponentY());
             netForceX += i.getComponentX();
             netForceY += i.getComponentY();
         }
 
 
         //adjusts accelerationX if forceX is greater than the max friction, otherwise sets to 0
-        if(netForceX > 0 && netForceX > frictionForce){
-            accelerationX = (netForceX - frictionForce) / mass;
+        if(netForceX > 0){
+            accelerationX = (netForceX) / mass;
         }
-        else if(netForceX < 0 && Math.abs(netForceX) > frictionForce){
-            accelerationX = (netForceX + frictionForce) / mass;
+        else if(netForceX < 0){
+            accelerationX = (netForceX) / mass;
         }
         else if(Math.abs(velocityX) < 0.25){
             velocityX = 0;
@@ -116,11 +144,11 @@ public class EnergyAndForceManagerThread extends Thread{
         velocityX *= FRICTION_MULTIPLIER;
 
         //adjusts accelerationY if forceY is greater than the max friction, otherwise sets to 0
-        if(netForceY > 0 && netForceY > frictionForce){
-            accelerationY = (netForceY - frictionForce) / mass;
+        if(netForceY > 0){
+            accelerationY = (netForceY) / mass;
         }
-        else if(netForceY < 0 && Math.abs(netForceY) > frictionForce){
-            accelerationY = (netForceY + frictionForce) / mass;
+        else if(netForceY < 0){
+            accelerationY = (netForceY) / mass;
         }
         else if(Math.abs(velocityY) < 0.25){
             velocityY = 0;
@@ -148,5 +176,30 @@ public class EnergyAndForceManagerThread extends Thread{
         f.setVelocityY(velocityY);
 
         f.getBounds().setPosition(f.getPosition().x, f.getPosition().y);
+        if(resetQueued){
+            resetForces();
+            resetQueued = false;
+        }
+    }
+    public void resetForces(){
+        for(Fighter f: fighters){
+            f.removeForce(0);
+            f.removeForce(1);
+            f.removeForce(2);
+            f.removeForce(3);
+
+            f.isLeft = false;
+            f.isRight = false;
+            f.isUp = false;
+            f.isDown = false;
+
+            f.setVelocityX(0);
+            f.setVelocityY(0);
+            f.setAccelerationX(0);
+            f.setAccelerationY(0);
+        }
+    }
+    public static ArrayList<Fighter> getFighters(){
+        return fighters;
     }
 }

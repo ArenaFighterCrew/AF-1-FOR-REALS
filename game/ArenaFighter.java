@@ -21,9 +21,26 @@ public class ArenaFighter extends ApplicationAdapter {
 	public static final int HEIGHT = 1080;//1440;//1620;
 	public static final String TITLE = "AF-1";
 
-	public static int mToggle = 1;
-	public static int sToggle= 1;
-	public static int vToggle = 1;
+	public static boolean mToggle = true;
+	public static boolean sToggle = true;
+	public static boolean vToggle = true;
+
+	public static boolean rToggle = true;
+	public static boolean cToggle = false;
+	public static boolean bToggle = false;
+
+	public static boolean eToggle = true;
+	public static boolean meToggle = false;
+	public static boolean hToggle = false;
+
+	public static boolean toggle3 = true;
+	public static boolean toggle5 = false;
+	public static boolean toggle10 = false;
+
+	public static boolean atMenu = true;
+
+	public static int maxWins = 3;
+	public static int mapType = 1;
 
 	public static Texture border;
 	public static Texture circle;
@@ -39,6 +56,8 @@ public class ArenaFighter extends ApplicationAdapter {
 	public static Sound death;
 	public static Sound beep;
 	public static Sound airhorn;
+
+	public static long deathID;
 
 	private GameStateManager gsm;
 	private SpriteBatch batch;
@@ -60,6 +79,10 @@ public class ArenaFighter extends ApplicationAdapter {
 		airhorn = Gdx.audio.newSound(Gdx.files.internal("Airhorn.wav"));
 		//death.loop();
 		//death.play(2.0f);
+
+		/*deathID = death.play();
+		death.stop(deathID);
+		death.setVolume(deathID, 0.2f);*/
 
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		menuState = new MenuState(gsm);

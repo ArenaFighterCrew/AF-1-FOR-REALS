@@ -94,30 +94,30 @@ public class OptionsState extends State{
             if(mBounds.contains(tmp.x, tmp.y)) {
                 // you are touching your texture
                 System.out.println("MUSIC touched");
-                if(ArenaFighter.mToggle /*mToggle*/ == 0)
-                    ArenaFighter.mToggle = 1;
-                else if(ArenaFighter.mToggle == 1)
-                    ArenaFighter.mToggle = 0;
+                if(ArenaFighter.mToggle)
+                    ArenaFighter.mToggle = false;
+                else if(!ArenaFighter.mToggle)
+                    ArenaFighter.mToggle = true;
                 //gsm.set(new MenuState(gsm));
             }
 
             if(sBounds.contains(tmp.x, tmp.y)) {
                 // you are touching your texture
                 System.out.println("SFX touched");
-                if(ArenaFighter.sToggle == 0)
-                    ArenaFighter.sToggle = 1;
-                else if(ArenaFighter.sToggle == 1)
-                    ArenaFighter.sToggle = 0;
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.sToggle = false;
+                else if(!ArenaFighter.sToggle)
+                    ArenaFighter.sToggle = true;
                 //gsm.set(new MenuState(gsm));
             }
 
             if(vBounds.contains(tmp.x, tmp.y)) {
                 // you are touching your texture
                 System.out.println("VFX touched");
-                if(ArenaFighter.vToggle == 0)
-                    ArenaFighter.vToggle = 1;
-                else if(ArenaFighter.vToggle == 1)
-                    ArenaFighter.vToggle = 0;
+                if(ArenaFighter.vToggle)
+                    ArenaFighter.vToggle = false;
+                else if(!ArenaFighter.vToggle)
+                    ArenaFighter.vToggle = true;
                 //gsm.set(new MenuState(gsm));
             }
 
@@ -130,11 +130,18 @@ public class OptionsState extends State{
 
         handleInput();
 
-        if(ArenaFighter.mToggle == 0)
+        if(!ArenaFighter.mToggle)
             ArenaFighter.music.setVolume(0);
 
-        if(ArenaFighter.mToggle == 1)
+        if(ArenaFighter.mToggle)
             ArenaFighter.music.setVolume(0.2f);
+
+        /*if(ArenaFighter.sToggle == 0)
+            ArenaFighter.death.setVolume(ArenaFighter.deathID, 0);
+
+        if(ArenaFighter.sToggle == 1)
+            ArenaFighter.death.setVolume(ArenaFighter.deathID, 0.2f);*/
+
 
     }
 
@@ -144,13 +151,13 @@ public class OptionsState extends State{
         sb.draw(background, 0, 0);
         sb.draw(back, backX, backY);
 
-        if(ArenaFighter.mToggle == 1)
+        if(ArenaFighter.mToggle)
             sb.draw(fillM, mX, mY, fill, fill);
 
-        if(ArenaFighter.sToggle == 1)
+        if(ArenaFighter.sToggle)
             sb.draw(fillS, sX, sY, fill+1, fill);
 
-        if(ArenaFighter.vToggle == 1)
+        if(ArenaFighter.vToggle)
             sb.draw(fillV, vX, vY, fill, fill);
 
         sb.end();

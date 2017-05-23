@@ -4,6 +4,7 @@ import com.arenafighter.game.ArenaFighter;
 import com.arenafighter.game.Physics.*;
 import com.arenafighter.game.Physics.EnergyAndForceManagerThread;
 import com.arenafighter.game.Physics.Force;
+import com.arenafighter.game.Sprites.AIFighter;
 import com.arenafighter.game.Sprites.Fighter;
 import com.arenafighter.game.Sprites.Map;
 import com.arenafighter.game.Sprites.MapManager;
@@ -37,7 +38,7 @@ public class PlayState extends State {
 
     private Player player;
     private Texture bg;
-    private Texture border;
+    private static Texture border;
     //private Texture floor;
     //private Vector2 floorPos1, floorPos2;
     //private Obstacle box; not used anymore, was just for testing purposes
@@ -54,24 +55,27 @@ public class PlayState extends State {
     private int exitX;
     private int exitY;
 
-    //Scores and their textures
-    private static int score1;
+    /**Scores and their textures*/
+    public static int score1;
     private static String score1S;
     private Texture icon1;
     private int icon1X;
-    private static int score2;
+    public static int score2;
     private static String score2S;
     private Texture icon2;
     private int icon2X;
-    private static int score3;
+    public static int score3;
     private static String score3S;
     private Texture icon3;
     private int icon3X;
-    private static int score4;
+    public static int score4;
     private static String score4S;
     private Texture icon4;
     private int icon4X;
     private BitmapFont font;
+    public static int maxWins;
+
+    private static boolean stop;
 
     private int scoreY;
     private int scoreYI;
@@ -81,19 +85,27 @@ public class PlayState extends State {
     private int iconW;
     private int iconH;
 
-    private Map map;
+    public static Map map;
+    public static int mapType;
+    private static boolean mapSet;
 
     private static Timer timer;
     private static Timer timer2;
     private static int time;
 
     private PauseState pauseState;
+    private WinState winState;
+    public static boolean isWon;
+
     private static boolean pauseVisible;
     //private static boolean end;
     private static boolean canScore;
 
+    private boolean newGame;
+
     //private int winner;
-    private static boolean wait;
+    public static boolean wait;
+    private static boolean go;
 
     Rectangle optionsBounds;
     Rectangle menuBounds;
@@ -117,21 +129,25 @@ public class PlayState extends State {
     /////////////////////////////////////////////////////////////////////////////
 
     //Static for main menu to access it (restart position)
-    public static Fighter player1;
+    public static PlayerFighter player1;
     public static int player1X;
     public static int player1Y;
+    public static Vector2 center1;
 
-    public static Fighter player2;
+    public static AIFighter player2;
     public static int player2X;
     public static int player2Y;
+    public static Vector2 center2;
 
-    public static Fighter player3;
+    public static AIFighter player3;
     public static int player3X;
     public static int player3Y;
+    public static Vector2 center3;
 
-    public static Fighter player4;
+    public static AIFighter player4;
     public static int player4X;
     public static int player4Y;
+    public static Vector2 center4;
 
     /*EnergyAndForceManagerThread eafmt = new EnergyAndForceManagerThread();
     eafmt.addFighter(player1);
@@ -167,28 +183,60 @@ public class PlayState extends State {
         //
         //////////////////////////////////////////////
 
-        //end = false;
+        mapType = ArenaFighter.mapType;
+        map = MapManager.setMap(mapType);
+        mapSet = true;
+
         canScore = false;
 
-        player1X = ArenaFighter.WIDTH / 3 * 1 - ArenaFighter.radius;
-        player1Y = (ArenaFighter.HEIGHT - border.getHeight()) / 3 * 1 - ArenaFighter.radius;
-        player2X = ArenaFighter.WIDTH / 3 * 2 - ArenaFighter.radius;
-        player2Y = (ArenaFighter.HEIGHT - border.getHeight()) / 3 * 1  - ArenaFighter.radius;
-        player3X = ArenaFighter.WIDTH / 3 * 1 - ArenaFighter.radius;
-        player3Y = (ArenaFighter.HEIGHT - border.getHeight()) / 3 * 2  - ArenaFighter.radius;
-        player4X = ArenaFighter.WIDTH / 3 * 2 - ArenaFighter.radius;
-        player4Y = (ArenaFighter.HEIGHT - border.getHeight()) / 3 * 2  - ArenaFighter.radius;
+        newGame = true;
+
+        if(mapType == 1){
+            player1X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*6;
+            player1Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*4;
+
+            player2X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*8;
+            player2Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*4;
+
+            player3X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*6;
+            player3Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*6;
+
+            player4X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*8;
+            player4Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*6;
+        }
+
+        if(mapType == 2){
+            player1X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*4;
+            player1Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*3;
+
+            player2X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*6;
+            player2Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*3;
+
+            player3X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*4;
+            player3Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*5;
+
+            player4X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*6;
+            player4Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*5;
+        }
 
         player1 = new PlayerFighter(player1X, player1Y, 1, 1);
-        player2 = new PlayerFighter(player2X, player2Y, 2, 2);
-        player3 = new PlayerFighter(/*player3X*/0, /*player3Y*/0, 3, 3);
-        player4 = new PlayerFighter(/*player4X*/0, /*player4Y*/0, 4, 4);
+        player2 = new AIFighter(player2X, player2Y, 2, 2);
+        player3 = new AIFighter(player3X, player3Y, 3, 3);
+        player4 = new AIFighter(player4X, player4Y, 4, 4);
+
+
+        center1 = new Vector2();
+        center2 = new Vector2();
+        center3 = new Vector2();
+        center4 = new Vector2();
 
         //player2.setTexture();
-        map = MapManager.map;
 
         //winner = 0;
         wait = false;
+        go = false;
+
+        stop = true;
 
         icon1 = player1.getTexture();
         icon2 = player2.getTexture();
@@ -233,9 +281,12 @@ public class PlayState extends State {
         score3S = Integer.toString(score3);
         score4 = 0;
         score4S = Integer.toString(score4);
+        maxWins = ArenaFighter.maxWins;
 
         pauseState = new PauseState(gsm);
         pauseVisible = false;
+
+        isWon = false;
 
         time = 5;
 
@@ -262,6 +313,22 @@ public class PlayState extends State {
             }
         }
 
+        /*while(true){
+            if(!player2.getControlThread().isAlive()){
+                player2.getControlThread().start();
+                System.out.println("Player2 AI control thread started");
+            }
+            else if(!player3.getControlThread().isAlive()){
+                player3.getControlThread().start();
+                System.out.println("Player3 AI control thread started");
+            }
+            else if(!player4.getControlThread().isAlive()){
+                player4.getControlThread().start();
+                System.out.println("Player4 AI control thread started");
+                break;
+            }
+        }*/
+
 
         //////////////////////////////////////////////////////////////////////////////////////
 
@@ -278,29 +345,72 @@ public class PlayState extends State {
                                    }
                                }*/
 
-                               if(wait){
-                                   if(time > 0)
+                               if(wait && !ArenaFighter.atMenu){
+                                   //go =false;
+                                   eafmt.pause();
+                                   if(time > 0 && !pauseVisible)
                                        time--;
+
                                    if(time == 0){
                                        wait = false;
                                        //System.out.println(Boolean.toString(player1.getDead()));
                                        //roundEnd();
-                                       restart();
+                                       if(isWon){
+                                           wait = true;
+                                           win();
+                                       }
+                                       else
+                                           restart();
                                    }
                                }
 
 
                                else {
-                                   if (!pauseVisible) {
+                                   if (!pauseVisible && !ArenaFighter.atMenu) {
                                        if (time > 0) {
+                                           maxWins = ArenaFighter.maxWins;
+                                           /*if(stop){
+                                               eafmt.pause();
+                                               stop = false;
+                                           }*/
+                                           /*player2.getControlThread().pause();
+                                           player3.getControlThread().pause();
+                                           player4.getControlThread().pause();*/
                                            time--;
-                                           if (time < 4 && time >= 1)
+                                           if (time < 4 && time >= 1 && !isWon && ArenaFighter.sToggle)
                                                ArenaFighter.beep.play(0.6f);
                                        }
                                        if (time == 0) {
                                            time--;
                                            canScore = true;
-                                           ArenaFighter.airhorn.play(0.3f);
+                                           mapSet = true;
+                                           /*player2.getControlThread().unpause();
+                                           player3.getControlThread().unpause();
+                                           player4.getControlThread().unpause();*/
+                                           eafmt.unpause();
+                                           if(!isWon) {
+                                               if(newGame){
+                                                   //Creates the AI
+                                                   while(true){
+                                                       if(!player2.getControlThread().isAlive()){
+                                                           player2.getControlThread().start();
+                                                           System.out.println("Player2 AI control thread started");
+                                                       }
+                                                       else if(!player3.getControlThread().isAlive()){
+                                                           player3.getControlThread().start();
+                                                           System.out.println("Player3 AI control thread started");
+                                                       }
+                                                       else if(!player4.getControlThread().isAlive()){
+                                                           player4.getControlThread().start();
+                                                           System.out.println("Player4 AI control thread started");
+                                                           break;
+                                                       }
+                                                       newGame = false;
+                                                   }
+                                               }
+                                               if(ArenaFighter.sToggle)
+                                                   ArenaFighter.airhorn.play(0.3f);
+                                           }
                                        }
                                    }
                                }
@@ -316,6 +426,75 @@ public class PlayState extends State {
     //private void pauseMenu(){
     //}
 
+    public static void switchPos(){
+
+        if(mapType == 1){
+            player1X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*6;
+            player1Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*4;
+
+            player2X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*8;
+            player2Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*4;
+
+            player3X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*6;
+            player3Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*6;
+
+            player4X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*8;
+            player4Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*6;
+        }
+
+        if(mapType == 2){
+            player1X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*4;
+            player1Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*3;
+
+            player2X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*6;
+            player2Y = (ArenaFighter.HEIGHT - border.getHeight() - map.getTexture().getHeight()) / 2 + ArenaFighter.radius*3;
+
+            player3X = (ArenaFighter.WIDTH - map.getTexture().getWidth()) / 2 + ArenaFighter.radius*4;
+            player3Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*5;
+
+            player4X = (ArenaFighter.WIDTH + map.getTexture().getWidth()) / 2 - ArenaFighter.radius*6;
+            player4Y = (ArenaFighter.HEIGHT - border.getHeight() + map.getTexture().getHeight()) / 2 - ArenaFighter.radius*5;
+        }
+
+    }
+
+    private void playerCenter(){
+
+        center1.set(player1.getPosition().x + ArenaFighter.radius, player1.getPosition().y + ArenaFighter.radius);
+        center2.set(player2.getPosition().x + ArenaFighter.radius, player2.getPosition().y + ArenaFighter.radius);
+        center3.set(player3.getPosition().x + ArenaFighter.radius, player3.getPosition().y + ArenaFighter.radius);
+        center4.set(player4.getPosition().x + ArenaFighter.radius, player4.getPosition().y + ArenaFighter.radius);
+
+    }
+
+
+    private void win(){
+
+        ArenaFighter.atMenu = true;
+        eafmt.pause();
+        //if(isWon) {
+            if (winState == null) {
+                winState = new WinState(gsm);
+                gsm.set(winState);
+            } else
+                gsm.push(winState);
+        //}
+
+    }
+
+    public static void resetScore(){
+
+        score1 = 0;
+        score2 = 0;
+        score3 = 0;
+        score4 = 0;
+
+        score1S = Integer.toString(score1);
+        score2S = Integer.toString(score2);
+        score3S = Integer.toString(score3);
+        score4S = Integer.toString(score4);
+    }
+
     private static void delay(){
 
         score1S = Integer.toString(score1);
@@ -323,8 +502,14 @@ public class PlayState extends State {
         score3S = Integer.toString(score3);
         score4S = Integer.toString(score4);
 
+        if(score1 == maxWins || score2 == maxWins || score3 == maxWins || score4 == maxWins) {
+            isWon = true;
+            //go = false;
+        }
         wait = true;
         time = 2;
+
+        EnergyAndForceManagerThread.resetQueued = true;
     }
 
     private static void initialPos(){
@@ -346,7 +531,21 @@ public class PlayState extends State {
 
     public static void restart(){
 
-        //end = false;
+        if(ArenaFighter.bToggle) {
+            if (mapType == 1 && mapSet) {
+                mapSet = false;
+                mapType = 2;
+                map = MapManager.setMap(mapType);
+            }
+
+            if (mapType == 2 && mapSet) {
+                mapSet = false;
+                mapType = 1;
+                map = MapManager.setMap(mapType);
+            }
+
+            switchPos();
+        }
 
         player1.setDead(false);
         player2.setDead(false);
@@ -373,54 +572,99 @@ public class PlayState extends State {
     }
 
 
-
     private void death(){
-
         //Checks if player is dead
-        if(!map.getBounds().contains(player1.getBounds()) && !player1.getDead()){
-            player1.setDead(true);
-            ArenaFighter.death.play(0.2f);
+
+        if(mapType == 1) {
+            if (!map.getBounds1().contains(center1) && !player1.getDead()) {
+                player1.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
+
+            if (!map.getBounds1().contains(center2) && !player2.getDead()) {
+                player2.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
+
+            if (!map.getBounds1().contains(center3) && !player3.getDead()) {
+                player3.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
+
+            if (!map.getBounds1().contains(center4) && !player4.getDead()) {
+                player4.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
         }
 
-        if(!map.getBounds().contains(player2.getBounds()) && !player2.getDead()){
-            player2.setDead(true);
-            ArenaFighter.death.play(0.2f);
+        if(mapType == 2) {
+            if (!map.getBounds2().contains(center1) && !player1.getDead()) {
+                player1.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
+
+            if (!map.getBounds2().contains(center2) && !player2.getDead()) {
+                player2.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
+
+            if (!map.getBounds2().contains(center3) && !player3.getDead()) {
+                player3.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
+
+            if (!map.getBounds2().contains(center4) && !player4.getDead()) {
+                player4.setDead(true);
+                if(ArenaFighter.sToggle)
+                    ArenaFighter.death.play(0.2f);
+            }
         }
 
-        if(!map.getBounds().contains(player3.getBounds()) && !player3.getDead()){
-            player3.setDead(true);
-            ArenaFighter.death.play(0.2f);
-        }
+    }
 
-        if(!map.getBounds().contains(player4.getBounds()) && !player4.getDead()){
-            player4.setDead(true);
-            ArenaFighter.death.play(0.2f);
-        }
+
+    private void score(){
+
+        death();
 
         //Checks if player is last one alive
-        if(!player1.getDead() && player2.getDead() && player3.getDead() && player4.getDead() && canScore){
+        if (player1.getDead() && player2.getDead() && player3.getDead() && player4.getDead() && canScore){
+            canScore = false;
+            delay();
+        }
+
+        else if(!player1.getDead() && player2.getDead() && player3.getDead() && player4.getDead() && canScore){
             score1++;
             canScore = false;
             delay();
         }
 
-        if(!player2.getDead() && player1.getDead() && player3.getDead() && player4.getDead() && canScore){
+        else if(!player2.getDead() && player1.getDead() && player3.getDead() && player4.getDead() && canScore){
             score2++;
             canScore = false;
             delay();
         }
 
-        if(!player3.getDead() && player1.getDead() && player2.getDead() && player4.getDead() && canScore){
+        else if(!player3.getDead() && player1.getDead() && player2.getDead() && player4.getDead() && canScore){
             score3++;
             canScore = false;
             delay();
         }
 
-        if(!player4.getDead() && player1.getDead() && player2.getDead() && player3.getDead() && canScore){
+        else if(!player4.getDead() && player1.getDead() && player2.getDead() && player3.getDead() && canScore){
             score4++;
             canScore = false;
             delay();
         }
+
+
 
 
 
@@ -497,7 +741,7 @@ public class PlayState extends State {
                         else if(keycode == 47)
                             player1.walk(3, true);
 
-                        else if(keycode == 59){
+                        else if(keycode == 62){
                             player1.dodge();
                         }
 
@@ -534,9 +778,13 @@ public class PlayState extends State {
 
             });
 
+        if(pauseVisible == false && time <= 0) {
             if (Gdx.input.justTouched()) {
-                score1++;
+                double x = Gdx.input.getX() - 39;
+                double y = ArenaFighter.HEIGHT - Gdx.input.getY() - 85;
+                player1.dash(x, y);
             }
+        }
 
         if(pauseVisible == true) {
             if (Gdx.input.justTouched()) {
@@ -582,6 +830,7 @@ public class PlayState extends State {
                 if (menuBounds.contains(tmp.x, tmp.y)) {
                     System.out.println("MENU touched");
                     pauseVisible = false;
+                    ArenaFighter.atMenu = true;
                     gsm.set(ArenaFighter.menuState);
                 }
 
@@ -657,11 +906,27 @@ public class PlayState extends State {
     @Override
     public void update(float dt) {
 
+        /////Trying to pause the AI here
+        /*if(go)
+            eafmt.unpause();
+
+        if(!go)
+            eafmt.pause();
+
+        if(canScore)
+            eafmt.unpause();
+        */
+
         //System.out.println(Integer.toString(time));
 
-        death();
+        playerCenter();
+
+        score();
 
         handleInput();
+
+        //win();
+
         //updateGround();
         //player.update(dt);
         //player1.update(dt);

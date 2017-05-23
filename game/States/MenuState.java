@@ -37,6 +37,7 @@ public class MenuState extends State{
     public static PlayState playState;
     public static OptionsState optionsState;
     public static CreditsState creditsState;
+    public static SetUpState setUpState;
 
     //Rectangle textureBounds = new Rectangle(/*textureX*/ArenaFighter.WIDTH/2-(285/2), /*textureY*/ArenaFighter.HEIGHT/3*2, /*textureWidth*/285, /*textureHeight*/152);
     //public Rectangle playBounds = new Rectangle(1137, 753, /*285*/play.getWidth(), play.getHeight()/*152*/);
@@ -98,15 +99,22 @@ public class MenuState extends State{
             if(playBounds.contains(tmp.x, tmp.y)) {
                 // you are touching your texture
                 System.out.println("PLAY touched");
-                if (playState == null) {
+                /*if (playState == null) {
                     playState = new PlayState(gsm);
                     gsm.set(playState);
+                }*/
+                if (setUpState == null){
+                    setUpState = new SetUpState(gsm);
+                    gsm.set(setUpState);
                 }
                 else{
                     //Want to "restart" position when "playing new game"
-                    PlayState.eafmt.unpause();
-                    PlayState.restart();
-                    gsm.push(playState);
+                    /*PlayState.restart();
+                    PlayState.resetScore();
+                    PlayState.isWon = false;
+                    PlayState.wait = false;
+                    gsm.push(playState);*/
+                    gsm.push(setUpState);
                 }
             }
 
